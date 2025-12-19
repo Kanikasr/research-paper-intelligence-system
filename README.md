@@ -41,7 +41,7 @@ PDF Ingestion
 - PyPDF for PDF text extraction
 - Sentence-Transformers for embeddings
 - FAISS for vector similarity search
-- LangChain (foundation-ready for future extensions)
+- LangChain 
 - Git and GitHub for version control
 
 ---
