@@ -2,8 +2,24 @@ import re
 from pathlib import Path
 from typing import List, Optional
 
-from ingestion.schema import ResearchPaper
+from .schema import ResearchPaper
+from src.citation.citation_extractor import extract_citations
 
+from ..citation.citation_graph import CitationGraph
+from ..trends.keyword_extractor import extract_keywords
+from ..trends.trend_analyzer import TrendAnalyzer
+
+
+# =========================
+# Global analyzers (OK for GA03)
+# =========================
+citation_graph = CitationGraph()
+trend_analyzer = TrendAnalyzer()
+
+
+# =========================
+# Metadata extraction helpers
+# =========================
 
 def extract_title(raw_text: str) -> str:
     """
@@ -46,13 +62,19 @@ def extract_year(raw_text: str) -> Optional[int]:
     return None
 
 
+# =========================
+# Core builder
+# =========================
+
 def build_research_paper(
     pdf_path: str,
     raw_text: str,
     sections: dict
 ) -> ResearchPaper:
     """
-    Build a ResearchPaper object from extracted components.
+    Build a ResearchPaper object and enrich it with:
+    - citations (Part IV)
+    - keywords & trends (Part V)
     """
     paper_id = Path(pdf_path).stem
 
@@ -61,6 +83,22 @@ def build_research_paper(
     year = extract_year(raw_text)
 
     abstract = sections.get("abstract", "")
+
+    # -------------------------
+    # Part IV — Citation Tracking
+    # -------------------------
+    references_text = sections.get("references", "")
+    citations = extract_citations(references_text)
+    citation_graph.add_paper(paper_id, citations)
+
+    # -------------------------
+    # Part V — Trend Analysis
+    # -------------------------
+    keywords_with_scores = extract_keywords(abstract)
+    trend_analyzer.add_paper(year, keywords_with_scores)
+
+    # Store only keyword names in paper object
+    keywords = [k for k, _ in keywords_with_scores]
 
     return ResearchPaper(
         paper_id=paper_id,
@@ -73,3 +111,4 @@ def build_research_paper(
         keywords=[],
         references=[]
     )
+

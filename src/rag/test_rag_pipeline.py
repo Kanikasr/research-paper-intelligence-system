@@ -7,30 +7,51 @@ from rag.rag_qa import RAGQuestionAnswering
 
 
 if __name__ == "__main__":
-    pdf_path = "../../data/raw_papers/attention_is_all_you_need.pdf"
+    # ----------------------------
+    # Step 1: Load and parse paper
+    # ----------------------------
+    pdf_path = "E:/projects/research_paper_intelligence/data/raw_papers/attention_is_all_you_need.pdf"
 
-    # Build semantic index
     raw_text = load_pdf_text(pdf_path)
     sections = split_into_sections(raw_text)
     paper = build_research_paper(pdf_path, raw_text, sections)
 
+    # ----------------------------
+    # Step 2: Chunk the paper
+    # ----------------------------
     chunks = chunk_paper(paper.paper_id, paper.sections)
 
+    # ----------------------------
+    # Step 3: Build semantic index
+    # ----------------------------
     search_engine = SemanticSearchEngine()
     search_engine.index_chunks(chunks)
 
-    # Ask a question
+    # ----------------------------
+    # Step 4: Ask a question
+    # ----------------------------
     question = "What problem does the Transformer model solve?"
 
-    results = search_engine.search(question, top_k=4)
+    results = [
+        r for r in search_engine.search(question, top_k=6)
+        if r["section"] in ["abstract", "introduction"]
+    ][:2]
+
     context_chunks = [res["text"] for res in results]
 
-    # RAG Answer
+    # ----------------------------
+    # Step 5: RAG Answering
+    # ----------------------------
     rag = RAGQuestionAnswering()
     answer = rag.generate_answer(context_chunks, question)
 
-    print("\nQUESTION:")
+    # ----------------------------
+    # Step 6: Print Output
+    # ----------------------------
+    print("\n==============================")
+    print("QUESTION:")
     print(question)
 
     print("\nANSWER:")
     print(answer)
+    print("==============================\n")

@@ -1,28 +1,37 @@
 import faiss
+import pickle
 import numpy as np
-from typing import List, Dict
+from pathlib import Path
+
+INDEX_PATH = Path("data/faiss.index")
+META_PATH = Path("data/metadata.pkl")
 
 
-class FAISSVectorStore:
-    """
-    FAISS-based vector store for semantic search.
-    """
-
-    def __init__(self, embedding_dim: int):
-        self.index = faiss.IndexFlatL2(embedding_dim)
+class FAISSStore:
+    def __init__(self, dim):
+        self.index = faiss.IndexFlatL2(dim)
         self.metadata = []
 
-    def add_embeddings(self, embeddings: List[List[float]], metadatas: List[Dict]):
-        vectors = np.array(embeddings).astype("float32")
-        self.index.add(vectors)
-        self.metadata.extend(metadatas)
+    def add(self, embeddings, metadata):
+        self.index.add(embeddings)
+        self.metadata.extend(metadata)
 
-    def search(self, query_embedding: List[float], top_k: int = 5):
-        query_vector = np.array([query_embedding]).astype("float32")
-        distances, indices = self.index.search(query_vector, top_k)
+    def save(self):
+        faiss.write_index(self.index, str(INDEX_PATH))
+        with open(META_PATH, "wb") as f:
+            pickle.dump(self.metadata, f)
 
+    @staticmethod
+    def load():
+        index = faiss.read_index(str(INDEX_PATH))
+        with open(META_PATH, "rb") as f:
+            metadata = pickle.load(f)
+        return index, metadata
+
+    def search(self, query_embedding, top_k=5):
+        distances, indices = self.index.search(query_embedding, top_k)
         results = []
         for idx in indices[0]:
-            results.append(self.metadata[idx])
-
+            if idx < len(self.metadata):
+                results.append(self.metadata[idx])
         return results

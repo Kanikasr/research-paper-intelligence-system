@@ -1,6 +1,6 @@
 pypdf
-langchain
 sentence-transformers
 faiss-cpu
-pydantic
 streamlit
+transformers
+torch

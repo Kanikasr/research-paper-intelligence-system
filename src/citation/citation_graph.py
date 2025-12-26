@@ -11,3 +11,7 @@ class CitationGraph:
 
     def get_full_graph(self):
         return self.graph
+
+    # ✅ ADD THIS METHOD
+    def get_all_papers(self):
+        return self.graph

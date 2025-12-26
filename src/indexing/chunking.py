@@ -1,31 +1,38 @@
-from typing import List, Dict
+from typing import Dict, List
 
 
-def chunk_paper(
-    paper_id: str,
+def chunk_sections(
     sections: Dict[str, str],
+    paper_id: str,
     max_words: int = 200
-) -> List[Dict]:
+) -> List[dict]:
     """
-    Chunk paper sections into smaller semantic units.
+    Split section text into smaller chunks (by word count).
 
-    Each chunk preserves metadata:
+    Returns a list of dicts with:
     - paper_id
-    - section name
+    - section
+    - text
     """
+
     chunks = []
 
-    for section_name, content in sections.items():
-        words = content.split()
+    for section_name, text in sections.items():
+        if not text:
+            continue
+
+        words = text.split()
 
         for i in range(0, len(words), max_words):
             chunk_text = " ".join(words[i:i + max_words])
 
-            chunk = {
+            if len(chunk_text.strip()) < 30:
+                continue
+
+            chunks.append({
                 "paper_id": paper_id,
-                "section": section_name,
+                "section": section_name.lower(),
                 "text": chunk_text
-            }
-            chunks.append(chunk)
+            })
 
     return chunks
