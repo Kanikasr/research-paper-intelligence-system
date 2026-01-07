@@ -2,3 +2,8 @@
 .venv/
 .venv1/
 __pycache__/
+*.pyc
+*.pkl
+*.faiss
+*.index
+data/raw_papers/*.pdf

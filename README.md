@@ -100,12 +100,10 @@ pip install -r requirements.txt
 
 ---
 
-### Add research papers
-## Place research paper PDFs inside:
-data/raw_papers/
-Example:
-attention_is_all_you_need.pdf
-bert_pretraining.pdf
+## Data
+This system expects users to provide their own PDFs in `data/raw_papers/`.
+Due to copyright restrictions, papers are not included in the repository.
+
 
 
 ### Run ingestion pipeline
